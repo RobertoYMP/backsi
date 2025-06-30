@@ -10,6 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // Rutas principales (se agregarán después)
 app.use('/usuarios', require('./routes/usuarios'));
 app.use('/solicitudes', require('./routes/solicitudes'));

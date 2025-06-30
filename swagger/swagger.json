@@ -6,7 +6,7 @@
     "description": "Documentación de la API para la gestión de casilleros en ESCOM."
   },
   "servers": [
-    { "url": "https://backsi.onrender.com" }
+    { "url": "https://backe-t77u.onrender.com" }
   ],
   "paths": {
     "/usuarios": {
@@ -529,6 +529,30 @@
     }
   },
   "components": {
+    "schemas": {
+      "Solicitud": {
+        "type": "object",
+        "properties": {
+          "id_solicitud": { "type": "integer" },
+          "id_usuario": { "type": "integer" },
+          "numero_boleta": { "type": "string" },
+          "nombre_completo": { "type": "string" },
+          "semestre_actual": { "type": "integer" },
+          "correo_personal": { "type": "string" },
+          "numero_celular": { "type": "string" },
+          "estado": { "type": "string", "enum": ["pendiente", "aprobada", "rechazada"] }
+        }
+      },
+      "Documento": {
+        "type": "object",
+        "properties": {
+          "id_documento": { "type": "integer" },
+          "id_solicitud": { "type": "integer" },
+          "tipo": { "type": "string", "enum": ["comprobante horario", "credencial vigente"] },
+          "url_archivo": { "type": "string", "description": "URL del documento almacenado" }
+        }
+      }
+    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
