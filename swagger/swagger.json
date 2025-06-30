@@ -1,0 +1,543 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Casilleros ESCOM",
+    "version": "1.0.0",
+    "description": "Documentación de la API para la gestión de casilleros en ESCOM."
+  },
+  "servers": [
+    { "url": "http://localhost:3001" }
+  ],
+  "paths": {
+    "/usuarios": {
+      "post": {
+        "summary": "Registrar un nuevo usuario (alumno o coordinador)",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "correo": { "type": "string", "example": "alumno@escom.ipn.mx" },
+                  "contrasena": { "type": "string", "example": "123456" },
+                  "rol": { "type": "string", "enum": ["alumno", "coordinador"] }
+                },
+                "required": ["correo", "contrasena", "rol"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_usuario": { "type": "integer" },
+                    "correo": { "type": "string" },
+                    "rol": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Faltan campos requeridos" },
+          "409": { "description": "El correo ya está registrado" },
+          "500": { "description": "Error al registrar usuario" }
+        }
+      }
+    },
+    "/usuarios/login": {
+      "post": {
+        "summary": "Iniciar sesión de usuario",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "correo": { "type": "string", "example": "alumno@escom.ipn.mx" },
+                  "contrasena": { "type": "string", "example": "123456" }
+                },
+                "required": ["correo", "contrasena"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inicio de sesión exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_usuario": { "type": "integer" },
+                    "correo": { "type": "string" },
+                    "rol": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Faltan campos requeridos" },
+          "401": { "description": "Credenciales inválidas" },
+          "500": { "description": "Error al iniciar sesión" }
+        }
+      }
+    },
+    "/solicitudes": {
+      "post": {
+        "summary": "Crear una nueva solicitud de casillero",
+        "tags": ["Solicitudes"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_usuario": { "type": "integer", "example": 1 },
+                  "numero_boleta": { "type": "string", "example": "2020123456" },
+                  "nombre_completo": { "type": "string", "example": "Juan Pérez" },
+                  "semestre_actual": { "type": "integer", "example": 4 },
+                  "correo_personal": { "type": "string", "example": "juan@gmail.com" },
+                  "numero_celular": { "type": "string", "example": "5512345678" }
+                },
+                "required": ["id_usuario", "numero_boleta", "nombre_completo", "semestre_actual", "correo_personal", "numero_celular"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Solicitud creada correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_solicitud": { "type": "integer" },
+                    "id_usuario": { "type": "integer" },
+                    "numero_boleta": { "type": "string" },
+                    "nombre_completo": { "type": "string" },
+                    "semestre_actual": { "type": "integer" },
+                    "correo_personal": { "type": "string" },
+                    "numero_celular": { "type": "string" },
+                    "estado": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Faltan campos requeridos" },
+          "409": { "description": "La boleta ya está registrada" },
+          "500": { "description": "Error al crear solicitud" }
+        }
+      },
+      "get": {
+        "summary": "Obtener todas las solicitudes (coordinador)",
+        "tags": ["Solicitudes"],
+        "responses": {
+          "200": {
+            "description": "Lista de solicitudes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Solicitud" }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error al obtener solicitudes" }
+        }
+      }
+    },
+    "/solicitudes/usuario/{id_usuario}": {
+      "get": {
+        "summary": "Obtener solicitudes de un usuario (alumno)",
+        "tags": ["Solicitudes"],
+        "parameters": [
+          {
+            "name": "id_usuario",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de solicitudes del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Solicitud" }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error al obtener solicitudes del usuario" }
+        }
+      }
+    },
+    "/solicitudes/{id_solicitud}/estado": {
+      "put": {
+        "summary": "Cambiar estado de una solicitud (aprobada/rechazada)",
+        "tags": ["Solicitudes"],
+        "parameters": [
+          {
+            "name": "id_solicitud",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "estado": { "type": "string", "enum": ["pendiente", "aprobada", "rechazada"] },
+                  "motivo_rechazo": { "type": "string", "example": "Faltan documentos" }
+                },
+                "required": ["estado"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Estado actualizado correctamente" },
+          "400": { "description": "Estado inválido" },
+          "404": { "description": "Solicitud no encontrada" },
+          "500": { "description": "Error al actualizar estado de solicitud" }
+        }
+      }
+    },
+    "/documentos": {
+      "post": {
+        "summary": "Subir documento PDF para una solicitud",
+        "tags": ["Documentos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_solicitud": { "type": "integer", "example": 1 },
+                  "tipo": { "type": "string", "enum": ["comprobante horario", "credencial vigente"] },
+                  "archivo": { "type": "string", "format": "binary" }
+                },
+                "required": ["id_solicitud", "tipo", "archivo"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Documento subido correctamente" },
+          "400": { "description": "Faltan campos requeridos o archivo" },
+          "500": { "description": "Error al subir documento" }
+        }
+      }
+    },
+    "/documentos/solicitud/{id_solicitud}": {
+      "get": {
+        "summary": "Obtener documentos de una solicitud",
+        "tags": ["Documentos"],
+        "parameters": [
+          {
+            "name": "id_solicitud",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de documentos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Documento" }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error al obtener documentos" }
+        }
+      }
+    },
+    "/pagos": {
+      "post": {
+        "summary": "Registrar pago (subir comprobante de pago)",
+        "tags": ["Pagos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_solicitud": { "type": "integer", "example": 1 },
+                  "comprobante": { "type": "string", "format": "binary" }
+                },
+                "required": ["id_solicitud", "comprobante"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Pago registrado correctamente" },
+          "400": { "description": "Falta id_solicitud o comprobante" },
+          "500": { "description": "Error al registrar pago" }
+        }
+      }
+    },
+    "/pagos/{id_pago}/validar": {
+      "put": {
+        "summary": "Aprobar o rechazar pago (coordinador)",
+        "tags": ["Pagos"],
+        "parameters": [
+          {
+            "name": "id_pago",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validado": { "type": "boolean", "example": true },
+                  "estado_pago": { "type": "string", "enum": ["pagado", "no pagado"] }
+                },
+                "required": ["validado", "estado_pago"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Pago validado correctamente" },
+          "400": { "description": "Datos inválidos" },
+          "404": { "description": "Pago no encontrado" },
+          "500": { "description": "Error al validar pago" }
+        }
+      }
+    },
+    "/pagos/solicitud/{id_solicitud}": {
+      "get": {
+        "summary": "Obtener pagos de una solicitud",
+        "tags": ["Pagos"],
+        "parameters": [
+          {
+            "name": "id_solicitud",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lista de pagos de la solicitud" },
+          "500": { "description": "Error al obtener pagos" }
+        }
+      }
+    },
+    "/casilleros": {
+      "get": {
+        "summary": "Obtener todos los casilleros",
+        "tags": ["Casilleros"],
+        "responses": {
+          "200": { "description": "Lista de casilleros" },
+          "500": { "description": "Error al obtener casilleros" }
+        }
+      },
+      "post": {
+        "summary": "Crear casillero (solo coordinador)",
+        "tags": ["Casilleros"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "numero": { "type": "integer", "example": 101 },
+                  "ubicacion": { "type": "string", "example": "Planta baja" }
+                },
+                "required": ["numero", "ubicacion"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Casillero creado correctamente" },
+          "400": { "description": "Faltan campos requeridos" },
+          "409": { "description": "El número de casillero ya existe" },
+          "500": { "description": "Error al crear casillero" }
+        }
+      }
+    },
+    "/casilleros/disponibles": {
+      "get": {
+        "summary": "Obtener casilleros disponibles",
+        "tags": ["Casilleros"],
+        "responses": {
+          "200": { "description": "Lista de casilleros disponibles" },
+          "500": { "description": "Error al obtener casilleros disponibles" }
+        }
+      }
+    },
+    "/casilleros/{id_casillero}/disponibilidad": {
+      "put": {
+        "summary": "Cambiar disponibilidad de casillero",
+        "tags": ["Casilleros"],
+        "parameters": [
+          {
+            "name": "id_casillero",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "disponible": { "type": "boolean", "example": true }
+                },
+                "required": ["disponible"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Disponibilidad actualizada correctamente" },
+          "400": { "description": "Valor de disponibilidad inválido" },
+          "404": { "description": "Casillero no encontrado" },
+          "500": { "description": "Error al actualizar disponibilidad" }
+        }
+      }
+    },
+    "/asignaciones": {
+      "post": {
+        "summary": "Crear asignación de casillero (pago validado y casillero disponible)",
+        "tags": ["Asignaciones"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_pago": { "type": "integer", "example": 1 },
+                  "id_casillero": { "type": "integer", "example": 10 }
+                },
+                "required": ["id_pago", "id_casillero"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Asignación creada correctamente" },
+          "400": { "description": "El pago no está validado o el casillero no está disponible" },
+          "500": { "description": "Error al asignar casillero" }
+        }
+      },
+      "get": {
+        "summary": "Obtener todas las asignaciones (coordinador)",
+        "tags": ["Asignaciones"],
+        "responses": {
+          "200": { "description": "Lista de asignaciones" },
+          "500": { "description": "Error al obtener asignaciones" }
+        }
+      }
+    },
+    "/asignaciones/usuario/{id_usuario}": {
+      "get": {
+        "summary": "Obtener asignaciones de un usuario",
+        "tags": ["Asignaciones"],
+        "parameters": [
+          {
+            "name": "id_usuario",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lista de asignaciones del usuario" },
+          "500": { "description": "Error al obtener asignaciones" }
+        }
+      }
+    },
+    "/casilleros/{id_casillero}": {
+      "delete": {
+        "summary": "Eliminar casillero (solo si no está asignado, solo coordinador)",
+        "tags": ["Casilleros"],
+        "parameters": [
+          {
+            "name": "id_casillero",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Casillero eliminado correctamente" },
+          "400": { "description": "El casillero está asignado y no puede eliminarse" },
+          "404": { "description": "Casillero no encontrado" },
+          "500": { "description": "Error al eliminar casillero" }
+        }
+      }
+    },
+    "/solicitudes/{id_solicitud}": {
+      "delete": {
+        "summary": "Eliminar solicitud (solo coordinador)",
+        "tags": ["Solicitudes"],
+        "parameters": [
+          {
+            "name": "id_solicitud",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Solicitud eliminada correctamente" },
+          "404": { "description": "Solicitud no encontrada" },
+          "500": { "description": "Error al eliminar solicitud" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ]
+}
