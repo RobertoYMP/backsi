@@ -6,7 +6,7 @@
     "description": "Documentación de la API para la gestión de casilleros en ESCOM."
   },
   "servers": [
-    { "url": "http://localhost:3001" }
+    { "url": "https://backsi.onrender.com" }
   ],
   "paths": {
     "/usuarios": {
