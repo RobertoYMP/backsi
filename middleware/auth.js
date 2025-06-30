@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const SECRET = process.env.JWT_SECRET || 'supersecreto';
+module.exports = { verificarToken, requireRole, SECRET };
 
 // Middleware para verificar JWT
 function verificarToken(req, res, next) {
@@ -24,4 +25,3 @@ function requireRole(roles) {
   };
 }
 
-module.exports = { verificarToken, requireRole, SECRET };
